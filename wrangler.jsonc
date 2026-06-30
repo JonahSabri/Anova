@@ -18,6 +18,7 @@
   ],
   "vars": {
     "ENABLE_CRON": "false",
-    "PAGES_URL": "https://raw.githubusercontent.com/IRNova/Nova-Proxy/main/public"
+    "PAGES_URL": "https://raw.githubusercontent.com/IRNova/Nova-Proxy/main/public",
+    "DEBUG": "true"
   }
 }
