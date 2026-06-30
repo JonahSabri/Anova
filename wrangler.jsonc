@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "yns-proxy-db",
-      "database_id": "placeholder-cloudflare-will-replace-this"
+      "database_id": "2e278182-b179-4df4-a394-de9a1623d072"
     }
   ],
   "vars": {
