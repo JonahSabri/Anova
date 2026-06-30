@@ -18009,13 +18009,18 @@ async function panelHtml(c, f, g = {}) {
       'src="' + PagesstaticPages + 'logo.png"',
     );
   }
-  // ── YNS rebranding + forced Farsi ──────────────────────────────────────────
-  // 1) Page title
+  // ── YNS rebranding + Farsi + Gold Glassmorphism ────────────────────────────
+  // 1) Page title (main panel + login page)
+  k = k.replace(/<title>Nova Proxy<\/title>/g, "<title>YNS<\/title>");
   k = k.replace(
     /<title>[^<]*<\/title>/,
     "<title>YNS \u2014 \u067e\u0646\u0644 \u06a9\u0646\u062a\u0631\u0644<\/title>",
   );
-  // 2) HTML root: switch to RTL Farsi immediately
+  // 2) HTML root: RTL Farsi + force dark theme for glass
+  k = k.replace(
+    /<html([^>]*)\blang=["']en["']([^>]*)\bdir=["']ltr["']([^>]*)\bdata-theme=["'][^"']*["']/,
+    '<html$1lang="fa"$2dir="rtl"$3data-theme="dark"',
+  );
   k = k.replace(
     /<html([^>]*)\blang=["']en["']([^>]*)\bdir=["']ltr["']/,
     '<html$1lang="fa"$2dir="rtl"',
@@ -18052,22 +18057,116 @@ async function panelHtml(c, f, g = {}) {
       '1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>' +
       "<\/svg><\/a><\/div>",
   );
-  // 7) Early localStorage override + favicon — runs before the panel's init script
+  // 7) Login page: h1 brand + footer text
+  k = k.replace(/<h1>Nova Proxy<\/h1>/g, "<h1>YNS<\/h1>");
+  k = k.replace(
+    /<div class="foot"[^>]*>Nova Proxy[^<]*<\/div>/g,
+    '<div class="foot" id="ft">YNS \u2014 \u0633\u0631\u0648\u06cc\u0633 \u067e\u0631\u0648\u06a9\u0633\u06cc \u0627\u062e\u062a\u0635\u0627\u0635\u06cc<\/div>',
+  );
+  // 8) meta tags that expose "Nova Proxy" name
+  k = k.replace(/content="Nova Proxy"/g, 'content="YNS"');
+  k = k.replace(/content="Nova"/g, 'content="YNS"');
+  // 9) Early script: localStorage Farsi default + dark theme + gold favicon
   const ynsFaviconSvg =
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2322d3ee'/%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-size='13' font-weight='900' fill='white' font-family='system-ui'%3EYNS%3C/text%3E%3C/svg%3E";
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E" +
+    "%3Crect width='32' height='32' rx='7' fill='%23f5c42c'/%3E" +
+    "%3Ctext x='50%25' y='72%25' text-anchor='middle' font-size='13' font-weight='900' fill='%230a0900' font-family='system-ui'%3EYNS%3C/text%3E%3C%2Fsvg%3E";
   const ynsEarlyScript =
     "<script>(function(){" +
+    // Force Farsi language
     "var _g=Storage.prototype.getItem;" +
     "Storage.prototype.getItem=function(k){" +
     "if(k==='nova-lang'&&!_g.call(this,k))return 'fa';" +
     "return _g.call(this,k);" +
     "};" +
+    // Force dark theme
+    "document.documentElement.setAttribute('data-theme','dark');" +
     "document.addEventListener('DOMContentLoaded',function(){" +
     "var fi=document.querySelector('link[rel*=\"icon\"]');" +
     "if(fi)fi.href='" + ynsFaviconSvg + "';" +
     "});" +
     "})();<\/script>";
-  k = k.replace("<\/head>", ynsEarlyScript + "<\/head>");
+  // 10) Gold + Glassmorphism CSS — injected before </head>
+  const ynsGoldCSS =
+    "<style>" +
+    // Gold accent variables (override both dark + light themes)
+    ":root{" +
+    "--ac:#f5c42c;--ac2:#f97316;--ok:#34d399;" +
+    "--grad:linear-gradient(120deg,#f5c42c,#f97316);" +
+    "--ring:rgba(245,196,44,.30);" +
+    "--ac-soft:rgba(245,196,44,.12);" +
+    "--ac-line:rgba(245,196,44,.32);" +
+    // Dark glass surfaces
+    "--bg:#07060a;--panel:rgba(10,9,13,.72);--card:rgba(14,13,19,.60);" +
+    "--card2:rgba(9,8,13,.55);--bd:rgba(245,196,44,.11);--bd2:rgba(245,196,44,.18);" +
+    "--shadow:0 1px 0 rgba(255,255,255,.015),0 16px 44px rgba(0,0,0,.60);" +
+    "}" +
+    // Force light-theme to also use dark glass (we always run dark)
+    "html[data-theme=light]{" +
+    "--bg:#07060a;--panel:rgba(10,9,13,.72);--card:rgba(14,13,19,.60);" +
+    "--card2:rgba(9,8,13,.55);--bd:rgba(245,196,44,.11);--bd2:rgba(245,196,44,.18);" +
+    "--tx:#e9edf4;--tx2:#aeb6c4;--mu:#6f7888;" +
+    "--ac:#f5c42c;--ac2:#f97316;--grad:linear-gradient(120deg,#f5c42c,#f97316);" +
+    "--ring:rgba(245,196,44,.28);--ok:#34d399;--dg:#f87171;--wn:#f5b042;" +
+    "--shadow:0 1px 0 rgba(255,255,255,.015),0 16px 44px rgba(0,0,0,.60);" +
+    "}" +
+    // Animated gold background orbs
+    "body{background:#07060a!important}" +
+    "body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;" +
+    "background:" +
+    "radial-gradient(ellipse 900px 600px at 12% 18%,rgba(245,196,44,.09),transparent 55%)," +
+    "radial-gradient(ellipse 700px 500px at 88% 78%,rgba(249,115,22,.08),transparent 50%)," +
+    "radial-gradient(ellipse 500px 500px at 55% 50%,rgba(245,196,44,.05),transparent 45%)," +
+    "radial-gradient(ellipse 400px 300px at 30% 80%,rgba(249,115,22,.06),transparent 45%)," +
+    "#07060a}" +
+    // Glass sidebar
+    ".sidebar{background:rgba(9,8,13,.72)!important;" +
+    "backdrop-filter:blur(28px) saturate(160%)!important;" +
+    "-webkit-backdrop-filter:blur(28px) saturate(160%)!important;" +
+    "border-inline-end-color:rgba(245,196,44,.10)!important}" +
+    // Glass cards (main panel)
+    ".card{background:rgba(13,12,19,.58)!important;" +
+    "backdrop-filter:blur(20px) saturate(140%)!important;" +
+    "-webkit-backdrop-filter:blur(20px) saturate(140%)!important;" +
+    "border-color:rgba(245,196,44,.10)!important}" +
+    // Nav hover + active
+    ".nav-item:hover{background:rgba(245,196,44,.07)!important;color:#f5c42c!important}" +
+    ".nav-item.active{background:rgba(245,196,44,.10)!important;color:#f5c42c!important}" +
+    ".nav-item.active::before{background:var(--grad)!important}" +
+    ".nav-item.active svg{color:#f5c42c!important;opacity:1!important}" +
+    // Primary buttons → gold gradient
+    ".btn.primary,.btn.primary:hover{background:var(--grad)!important;" +
+    "border-color:transparent!important;color:#0a0900!important;font-weight:800!important}" +
+    "button.go{background:var(--grad)!important;color:#0a0900!important;font-weight:800!important}" +
+    "button.go:hover{filter:brightness(1.06)!important}" +
+    // Input focus
+    "input:focus,select:focus,textarea:focus{border-color:#f5c42c!important;" +
+    "box-shadow:0 0 0 3px rgba(245,196,44,.22)!important}" +
+    // Toggle switch on
+    ".sw.on .k,.sw input:checked+span .k{background:#f5c42c!important}" +
+    // Brand mark glass
+    ".brand .mark,.brand .lg{background:rgba(245,196,44,.10)!important;" +
+    "border-color:rgba(245,196,44,.18)!important}" +
+    // Login glass card
+    ".box .card{background:rgba(12,11,17,.72)!important;" +
+    "backdrop-filter:blur(34px) saturate(180%)!important;" +
+    "-webkit-backdrop-filter:blur(34px) saturate(180%)!important;" +
+    "border-color:rgba(245,196,44,.16)!important;" +
+    "box-shadow:0 0 0 1px rgba(245,196,44,.07),0 24px 60px rgba(0,0,0,.65)!important}" +
+    // Login bg
+    ".box{position:relative;z-index:1}" +
+    "body>.box~*,.box::before{display:none}" +
+    // Lang button on login
+    ".lang button.on{background:#f5c42c!important;color:#0a0900!important}" +
+    // Scrollbar gold
+    "::-webkit-scrollbar{width:4px;height:4px}" +
+    "::-webkit-scrollbar-track{background:transparent}" +
+    "::-webkit-scrollbar-thumb{background:rgba(245,196,44,.28);border-radius:2px}" +
+    "::-webkit-scrollbar-thumb:hover{background:rgba(245,196,44,.50)}" +
+    // Selection
+    "::selection{background:rgba(245,196,44,.22)}" +
+    "<\/style>";
+  k = k.replace("<\/head>", ynsGoldCSS + ynsEarlyScript + "<\/head>");
   // 8) Late patch — runs after all panel JS
   //    - overrides every I18N string (both fa & en) with YNS-specific Farsi labels
   //    - re-applies Farsi/RTL
@@ -18077,10 +18176,10 @@ async function panelHtml(c, f, g = {}) {
   const ynsLogoSvg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='30' height='30'>" +
     "<defs><linearGradient id='yg' x1='0' y1='0' x2='40' y2='40' gradientUnits='userSpaceOnUse'>" +
-    "<stop offset='0%25' stop-color='%2322d3ee'/><stop offset='100%25' stop-color='%237c5cff'/>" +
+    "<stop offset='0%25' stop-color='%23f5c42c'/><stop offset='100%25' stop-color='%23f97316'/>" +
     "<\/linearGradient><\/defs>" +
     "<rect width='40' height='40' rx='9' fill='url(%23yg)'/>" +
-    "<text x='50%25' y='70%25' text-anchor='middle' font-size='14' font-weight='900' fill='white' font-family='system-ui,sans-serif'>YNS<\/text>" +
+    "<text x='50%25' y='70%25' text-anchor='middle' font-size='14' font-weight='900' fill='%230a0900' font-family='system-ui,sans-serif'>YNS<\/text>" +
     "<\/svg>";
   // Custom YNS Farsi sidebar labels (applied to both en & fa so no language
   // switch can expose the original Nova Proxy strings)
@@ -18125,42 +18224,54 @@ async function panelHtml(c, f, g = {}) {
   const ynsLateScript =
     "<script>(function(){" +
     "var YO=" + ynsI18NJson + ";" +
+    "var YFT='\u06cc\u0648\u0646\u0633 \u2014 \u0633\u0631\u0648\u06cc\u0633 \u067e\u0631\u0648\u06a9\u0633\u06cc \u0627\u062e\u062a\u0635\u0627\u0635\u06cc';" +
     "function ynsPatch(){" +
-    // Override specific i18n keys in BOTH en and fa
+    // Patch main panel I18N (both en + fa)
     "if(window.I18N){['en','fa'].forEach(function(l){" +
     "if(!window.I18N[l])return;" +
-    // Replace all Nova Proxy strings
     "Object.keys(window.I18N[l]).forEach(function(k){" +
     "if(typeof window.I18N[l][k]==='string')" +
     "window.I18N[l][k]=window.I18N[l][k].replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
     "});" +
-    // Apply YNS custom labels
     "Object.keys(YO).forEach(function(k){window.I18N[l][k]=YO[k];});" +
     "});}" +
-    // Force Farsi + RTL
+    // Patch login page L object (en + fa)
+    "if(window.L){['en','fa'].forEach(function(l){" +
+    "if(!window.L[l])return;" +
+    "Object.keys(window.L[l]).forEach(function(k){" +
+    "if(typeof window.L[l][k]==='string')" +
+    "window.L[l][k]=window.L[l][k].replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
+    "});" +
+    "window.L[l].ft=YFT;" +
+    "});}" +
+    // Force Farsi + RTL (main panel)
     "if(typeof applyLang==='function')applyLang('fa');" +
-    // Walk DOM and replace any remaining "Nova Proxy" text
+    // Force Farsi on login page
+    "if(typeof applyL==='function')applyL('fa');" +
+    // Update login footer text directly
+    "var ftEl=document.getElementById('ft');" +
+    "if(ftEl&&ftEl.textContent.indexOf('Nova')>=0)ftEl.textContent=YFT;" +
+    // Walk DOM: replace any remaining "Nova Proxy" text nodes
     "(function walk(n){" +
-    "if(n.nodeType===3)n.textContent=n.textContent.replace(/Nova Proxy/gi,'YNS');" +
+    "if(n.nodeType===3)n.textContent=n.textContent.replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
     "else if(n.childNodes)Array.from(n.childNodes).forEach(walk);" +
     "})(document.body||document.documentElement);" +
-    // Replace logo img → YNS gradient SVG
-    "document.querySelectorAll('img[alt=\"YNS\"]').forEach(function(img){" +
+    // Replace logo img → YNS gold gradient SVG
+    "document.querySelectorAll('img[alt=\"YNS\"],img[alt=\"Nova\"]').forEach(function(img){" +
     "var d=document.createElement('div');" +
     "d.innerHTML=decodeURIComponent('" + ynsLogoSvg + "');" +
     "var s=d.firstChild;" +
     "if(s&&img.parentNode)img.parentNode.replaceChild(s,img);" +
     "});" +
-    // Hide any card that still mentions Nova Proxy in its heading/description
+    // Hide about/changelog cards
     "document.querySelectorAll('[data-i18n=\"ab_changelog\"],[data-i18n=\"ab_links\"]')" +
-    ".forEach(function(el){" +
-    "var card=el.closest('.card');" +
-    "if(card)card.style.display='none';" +
-    "});" +
+    ".forEach(function(el){var c=el.closest('.card');if(c)c.style.display='none';});" +
+    // Force dark theme (override theme toggle)
+    "document.documentElement.setAttribute('data-theme','dark');" +
     "}" +
     "if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ynsPatch);" +
     "else ynsPatch();" +
-    "setTimeout(ynsPatch,300);" +
+    "setTimeout(ynsPatch,250);" +
     "})();<\/script>";
   k = k.replace("<\/body>", ynsLateScript + "<\/body>");
   // ── end YNS rebranding ─────────────────────────────────────────────────────
