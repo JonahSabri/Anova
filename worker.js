@@ -185,6 +185,9 @@ let cachedCfUsageAt = 0;
 const _cidrListCache = new Map();
 const novaWorker = {
   async fetch(f, g, h) {
+    if (g && g.DEBUG_PROBE === "1") {
+      return new Response("YNS worker alive - module init OK", { status: 200 });
+    }
     try {
       wrapKVWithD1(g);
       if (
