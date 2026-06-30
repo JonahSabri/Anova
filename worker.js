@@ -18009,6 +18009,84 @@ async function panelHtml(c, f, g = {}) {
       'src="' + PagesstaticPages + 'logo.png"',
     );
   }
+  // ── YNS rebranding + forced Farsi ──────────────────────────────────────────
+  // 1) Page title
+  k = k.replace(
+    /<title>[^<]*<\/title>/,
+    "<title>YNS \u2014 \u067e\u0646\u0644 \u06a9\u0646\u062a\u0631\u0644<\/title>",
+  );
+  // 2) HTML root: switch to RTL Farsi immediately
+  k = k.replace(
+    /<html([^>]*)\blang=["']en["']([^>]*)\bdir=["']ltr["']/,
+    '<html$1lang="fa"$2dir="rtl"',
+  );
+  // 3) Sidebar brand name
+  k = k.replace(
+    /<div class="name">Nova Proxy<\/div>/g,
+    '<div class="name">YNS</div>',
+  );
+  // 4) Logo alt text
+  k = k.replace(/alt=["']Nova Proxy["']/g, 'alt="YNS"');
+  // 5) Nova Proxy GitHub repo link → YNS repo
+  k = k.replace(/IRNova\/Nova-Proxy/g, "JonahSabri/Anova");
+  // 6) Early localStorage override + favicon — runs before the panel's init script
+  const ynsFaviconSvg =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2322d3ee'/%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-size='13' font-weight='900' fill='white' font-family='system-ui'%3EYNS%3C/text%3E%3C/svg%3E";
+  const ynsEarlyScript =
+    "<script>(function(){" +
+    "var _g=Storage.prototype.getItem;" +
+    "Storage.prototype.getItem=function(k){" +
+    "if(k==='nova-lang'&&!_g.call(this,k))return 'fa';" +
+    "return _g.call(this,k);" +
+    "};" +
+    // Override favicon immediately
+    "document.addEventListener('DOMContentLoaded',function(){" +
+    "var fi=document.querySelector('link[rel*=\"icon\"]');" +
+    "if(fi)fi.href='" + ynsFaviconSvg + "';" +
+    "});" +
+    "})();<\/script>";
+  k = k.replace("<\/head>", ynsEarlyScript + "<\/head>");
+  // 7) Late patch — runs after all panel JS: re-applies Farsi, replaces remaining
+  //    "Nova Proxy" text nodes, swaps the logo SVG, patches I18N descriptions.
+  const ynsLogoSvg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='30' height='30'>" +
+    "<defs><linearGradient id='yg' x1='0' y1='0' x2='40' y2='40' gradientUnits='userSpaceOnUse'>" +
+    "<stop offset='0%25' stop-color='%2322d3ee'/><stop offset='100%25' stop-color='%237c5cff'/>" +
+    "<\/linearGradient><\/defs>" +
+    "<rect width='40' height='40' rx='9' fill='url(%23yg)'/>" +
+    "<text x='50%25' y='70%25' text-anchor='middle' font-size='14' font-weight='900' fill='white' font-family='system-ui,sans-serif'>YNS<\/text>" +
+    "<\/svg>";
+  const ynsLateScript =
+    "<script>(function(){" +
+    "function ynsPatch(){" +
+    // Patch every I18N string that says "Nova Proxy"
+    "if(window.I18N){['en','fa'].forEach(function(l){" +
+    "if(!window.I18N[l])return;" +
+    "Object.keys(window.I18N[l]).forEach(function(k){" +
+    "if(typeof window.I18N[l][k]==='string')" +
+    "window.I18N[l][k]=window.I18N[l][k].replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
+    "});});}" +
+    // Force Farsi
+    "if(typeof applyLang==='function')applyLang('fa');" +
+    // Walk DOM and replace any leftover "Nova Proxy" text nodes
+    "(function walk(n){" +
+    "if(n.nodeType===3)n.textContent=n.textContent.replace(/Nova Proxy/gi,'YNS');" +
+    "else if(n.childNodes)Array.from(n.childNodes).forEach(walk);" +
+    "})(document.body||document.documentElement);" +
+    // Replace logo img with inline SVG
+    "document.querySelectorAll('img[alt=\"YNS\"]').forEach(function(img){" +
+    "var d=document.createElement('div');" +
+    "d.innerHTML=decodeURIComponent('" + ynsLogoSvg + "');" +
+    "var s=d.firstChild;" +
+    "if(s&&img.parentNode)img.parentNode.replaceChild(s,img);" +
+    "});" +
+    "}" +
+    "if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ynsPatch);" +
+    "else ynsPatch();" +
+    "setTimeout(ynsPatch,300);" +
+    "})();<\/script>";
+  k = k.replace("<\/body>", ynsLateScript + "<\/body>");
+  // ── end YNS rebranding ─────────────────────────────────────────────────────
   if (g.spaPage) {
     k = k.replace(
       "</head>",
