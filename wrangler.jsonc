@@ -11,6 +11,14 @@
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "ENABLE_CRON": "false",
-    "PAGES_URL": "https://raw.githubusercontent.com/IRNova/Nova-Proxy/main/public"
-  }
+    "PAGES_URL": "https://raw.githubusercontent.com/IRNova/Nova-Proxy/main/public",
+    "DEBUG": "true"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "yns-proxy-db",
+      "database_id": "2e278182-b179-4df4-a394-de9a1623d072"
+    }
+  ]
 }
