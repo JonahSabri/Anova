@@ -130,7 +130,7 @@ async function serveUserHub() {
     }
     const f = await fetch(c + "/user/index.html", {
       headers: {
-        "User-Agent": "NovaProxy",
+        "User-Agent": "YNSProxy",
       },
       cf: {
         cacheTtl: 300,
@@ -160,7 +160,7 @@ async function fetchNovaVersion() {
     try {
       const f = await fetch(c, {
         headers: {
-          "User-Agent": "NovaProxy",
+          "User-Agent": "YNSProxy",
         },
         cf: {
           cacheTtl: 0,
@@ -540,7 +540,7 @@ const novaWorker = {
         if (E === "warp" || E.startsWith("warp/")) {
           return handleWarpRequest(f);
         }
-        if (E === "nova-block") {
+        if (E === "yns-block") {
           return novaBlockPage(f);
         }
         if (E === "install" || E.startsWith("install/")) {
@@ -892,14 +892,14 @@ const novaWorker = {
               );
             } else if (E === "admin/security/2fa-setup") {
               const aI = randomBase32(32);
-              const aJ = encodeURIComponent("Nova Proxy (" + p.host + ")");
+              const aJ = encodeURIComponent("YNS (" + p.host + ")");
               const aK =
                 "otpauth://totp/" +
                 aJ +
                 "?secret=" +
                 aI +
                 "&issuer=" +
-                encodeURIComponent("Nova Proxy") +
+                encodeURIComponent("YNS") +
                 "&algorithm=SHA1&digits=6&period=30";
               return new Response(
                 JSON.stringify({
@@ -1341,7 +1341,7 @@ const novaWorker = {
                     try {
                       const bN = await fetch(bJ + "/api/warp", {
                         headers: {
-                          "User-Agent": "NovaProxy",
+                          "User-Agent": "YNSProxy",
                         },
                       });
                       const bO = await bN.json();
@@ -1722,7 +1722,7 @@ const novaWorker = {
               try {
                 const cC = await fetch(cn, {
                   headers: {
-                    "User-Agent": "NovaProxy",
+                    "User-Agent": "YNSProxy",
                   },
                 });
                 if (!cC.ok) {
@@ -1939,7 +1939,7 @@ const novaWorker = {
                     specifiedPorts: -1,
                   },
                   SUB: null,
-                  SUBNAME: "Nova Proxy",
+                  SUBNAME: "YNS",
                   SUBUpdateTime: 3,
                   TOKEN: await MD5MD5(D + B),
                 },
@@ -3080,11 +3080,12 @@ const novaWorker = {
               p.searchParams.get("host") === "example.com" &&
               p.searchParams.get("uuid") ===
                 "00000000-0000-4000-8000-000000000000" &&
-              q.toLowerCase().includes("NovaProxy (https://github.com/IRNova");
+              q.toLowerCase().includes("YNSProxy");
             const eE = p.searchParams.get("token");
             const eF = p.searchParams.get("sub");
             const eG = p.searchParams.get("key");
             let eH = "";
+            let eHUsername = "";
             const eI =
               savedUsersAuth &&
               Date.now() - savedUsersAuthAt < 120000 &&
@@ -3129,6 +3130,7 @@ const novaWorker = {
                   } catch (eT) {}
                 }
                 eH = eQ.tag;
+                eHUsername = eQ.username || eQ.id || "";
               }
             }
             const eJ = eE === eC || eH !== "";
@@ -3382,7 +3384,11 @@ const novaWorker = {
                   pathFieldName: fl,
                   domainFieldName: fm,
                 } = getTransportProtocolConfig(config_JSON);
-                const fn = "This service is FREE - Nova Proxy Team";
+                const fn = eHUsername
+                  ? "YNS | " + eHUsername
+                  : eH
+                    ? "YNS | " + eH
+                    : "YNS";
                 fc = [D + ":443#" + fn, ...fc];
                 const fo = String(config_JSON.chainProxy || "").trim();
                 let fp = fo
@@ -3427,7 +3433,11 @@ const novaWorker = {
                       if (fQ) {
                         fR = fQ[1];
                         fS = fQ[2] ? fQ[2] : "443";
-                        fT = fQ[3] || fR;
+                        fT = fQ[3]
+                          ? (fQ[3].startsWith("YNS")
+                            ? fQ[3]
+                            : "YNS | " + fQ[3])
+                          : "YNS | " + fR;
                       } else {
                         console.warn(
                           "[subContent] invalidIpFormatIgnored: " + fO,
@@ -3600,7 +3610,7 @@ const novaWorker = {
                     .join("\n");
               } else {
                 const fO =
-                  (/novaproxy/i.test(
+                  (/(novaproxy|yns)/i.test(
                     config_JSON.subConverterConfig.SUBAPI || "",
                   ) || !config_JSON.subConverterConfig.SUBAPI
                     ? "https://SUBAPI.cmliussss.net"
@@ -3633,7 +3643,7 @@ const novaWorker = {
                       "User-Agent":
                         "Subconverter for " +
                         eX +
-                        " NovaProxy (https://github.com/NovaProxy)",
+                        " YNSProxy",
                     },
                   });
                   if (fP.ok) {
@@ -3842,7 +3852,7 @@ const novaWorker = {
     } catch (ga) {
       try {
         console.error(
-          "Nova fatal:",
+          "YNS fatal:",
           (ga && (ga.stack || ga.message)) || String(ga),
         );
       } catch (gb) {}
@@ -3872,7 +3882,7 @@ const novaWorker = {
       try {
         if (g && (g.DEBUG === "1" || g.DEBUG === "true")) {
           const ge = (ga && (ga.stack || ga.message)) || String(ga);
-          return new Response("Nova DEBUG — uncaught exception:\n\n" + ge, {
+          return new Response("YNS DEBUG — uncaught exception:\n\n" + ge, {
             status: 500,
             headers: {
               "Content-Type": "text/plain;charset=utf-8",
@@ -4859,7 +4869,7 @@ async function backendDiagnostic(c, f) {
   try {
     const l = new URL(i.url);
     if (l.pathname === "/" || !l.pathname) {
-      l.pathname = "/novavpn";
+      l.pathname = "/ynsvpn";
     }
     j = l.toString();
   } catch (m) {
@@ -4890,7 +4900,7 @@ async function backendDiagnostic(c, f) {
     if (o.status === 101 && o.webSocket) {
       g.ok = true;
       g.steps.push(
-        "SUCCESS: Nova reached your backend and it upgraded to WebSocket (101). The relay path works. If a client still fails, the issue is client-side (UUID/path/TLS in the link), not the backend.",
+        "SUCCESS: YNS reached your backend and it upgraded to WebSocket (101). The relay path works. If a client still fails, the issue is client-side (UUID/path/TLS in the link), not the backend.",
       );
       try {
         o.webSocket.accept();
@@ -4938,7 +4948,7 @@ async function backendDiagnostic(c, f) {
     g.elapsedMs = Date.now() - k;
     g.error = w && w.message ? w.message : String(w);
     g.steps.push(
-      "Nova could NOT reach the backend at all (fetch threw). Most likely: Cloudflare Workers cannot open an outbound connection to a raw http:// IP on a non-standard port. Fix: front your backend with TLS on 443/8443 (https) via a domain, OR keep it http but on a port Cloudflare allows. See notes below.",
+      "YNS could NOT reach the backend at all (fetch threw). Most likely: Cloudflare Workers cannot open an outbound connection to a raw http:// IP on a non-standard port. Fix: front your backend with TLS on 443/8443 (https) via a domain, OR keep it http but on a port Cloudflare allows. See notes below.",
     );
     g.note =
       "Cloudflare Workers can only make outbound connections to a limited set of ports for plain fetch. Ports like 10000 over http may be blocked from the Worker even when open to the public internet. Putting Xray behind TLS on 443/2053/2083/2087/2096/8443 via a (sub)domain is the reliable fix.";
@@ -4977,7 +4987,7 @@ function isBackendExcludedPath(c, f) {
     g === "bot" ||
     g === "setwebhook" ||
     g === "version" ||
-    g === "nova-block" ||
+    g === "yns-block" ||
     g === "locations" ||
     g === "robots.txt"
   ) {
@@ -6379,7 +6389,7 @@ async function getNat64Prefixes() {
     try {
       const f = await fetch(c, {
         headers: {
-          "User-Agent": "NovaProxy",
+          "User-Agent": "YNSProxy",
         },
       });
       const g = await f.text();
@@ -7895,7 +7905,7 @@ function novaBlockPage(c) {
   const f = new URL(c.url);
   const g = f.host;
   const h =
-    '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مسدود شده - Nova Proxy</title><style>@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap");*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Vazirmatn",sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.card{background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:48px 40px;max-width:480px;width:100%;text-align:center;position:relative;overflow:hidden}.card::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(239,68,68,0.1),transparent,rgba(239,68,68,0.05),transparent);animation:spin 6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.content{position:relative;z-index:1}.icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:#fff;box-shadow:0 8px 32px rgba(239,68,68,0.3)}.shield{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:#fff;box-shadow:0 8px 32px rgba(139,92,246,0.3)}h1{color:#fff;font-size:24px;font-weight:900;margin-bottom:8px;letter-spacing:-0.5px}h1 span{background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}p{color:rgba(255,255,255,0.6);font-size:14px;line-height:1.8;margin:12px 0}.badge{display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:16px}.domain{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;margin:16px 0;direction:ltr;font-family:monospace;font-size:13px;color:rgba(255,255,255,0.8);word-break:break-all}.btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;margin-top:8px;text-decoration:none}.btn:hover{background:rgba(255,255,255,0.15);transform:translateY(-1px)}</style></head><body><div class="card"><div class="content"><div class="icon">&#128274;</div><h1>دسترسی <span>مسدود</span></h1><div class="badge">&#9888; محتوای بزرگسالان</div><p>این وب‌سایت به دلیل حاوی محتوای بزرگسالان توسط <strong>پروکسی نوآ</strong> مسدود شده است.</p><div class="domain">' +
+    '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مسدود شده - YNS</title><style>@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap");*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Vazirmatn",sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.card{background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:48px 40px;max-width:480px;width:100%;text-align:center;position:relative;overflow:hidden}.card::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(239,68,68,0.1),transparent,rgba(239,68,68,0.05),transparent);animation:spin 6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.content{position:relative;z-index:1}.icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:#fff;box-shadow:0 8px 32px rgba(239,68,68,0.3)}.shield{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:#fff;box-shadow:0 8px 32px rgba(139,92,246,0.3)}h1{color:#fff;font-size:24px;font-weight:900;margin-bottom:8px;letter-spacing:-0.5px}h1 span{background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}p{color:rgba(255,255,255,0.6);font-size:14px;line-height:1.8;margin:12px 0}.badge{display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:16px}.domain{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;margin:16px 0;direction:ltr;font-family:monospace;font-size:13px;color:rgba(255,255,255,0.8);word-break:break-all}.btn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;margin-top:8px;text-decoration:none}.btn:hover{background:rgba(255,255,255,0.15);transform:translateY(-1px)}</style></head><body><div class="card"><div class="content"><div class="icon">&#128274;</div><h1>دسترسی <span>مسدود</span></h1><div class="badge">&#9888; محتوای بزرگسالان</div><p>این وب‌سایت به دلیل حاوی محتوای بزرگسالان توسط <strong>YNS</strong> مسدود شده است.</p><div class="domain">' +
     g +
     "</div><p>لطفاً با مدیر سامانه تماس بگیرید.</p></div></div></body></html>";
   return new Response(h, {
@@ -7931,7 +7941,7 @@ async function handleDoHRequest(c) {
   ) {
     const j = f.protocol + "//" + f.host + f.pathname;
     const k =
-      '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DoH Proxy - Nova Proxy</title><style>:root{--primary:#0ea5e9;--bg:#f8fafc;--card:#fff;--text:#1e293b;--border:#e2e8f0}body{font-family:Vazirmatn,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh}.card{background:var(--card);border-radius:16px;padding:32px;max-width:560px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08);border:1px solid var(--border);text-align:center}.badge{display:inline-block;background:linear-gradient(135deg,#0ea5e9,#667eea);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700;font-size:14px;margin-bottom:16px}h2{margin:0 0 8px;font-size:22px;font-weight:800;background:linear-gradient(135deg,#0ea5e9,#667eea);-webkit-background-clip:text;-webkit-text-fill-color:transparent}p{color:#64748b;font-size:14px;line-height:1.7;margin:8px 0}.url-box{background:#f0f9ff;border:2px solid #0ea5e9;border-radius:12px;padding:14px 18px;margin:16px 0;direction:ltr;text-align:left;font-family:monospace;font-size:15px;font-weight:700;color:#0369a1;word-break:break-all;cursor:pointer;transition:all .2s}.url-box:hover{background:#e0f2fe}.btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0ea5e9,#667eea);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;margin-top:8px;text-decoration:none}.btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(14,165,233,.3)}.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;text-align:right}.feature{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:500;color:#475569;display:flex;align-items:center;gap:6px}.feature i{color:#10b981}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none}.toast.show{opacity:1}</style></head><body><div class="card"><div class="badge">&#128736; DoH Proxy</div><h2>DNS over HTTPS</h2><p>از این سرور به عنوان DNS رمزگذاری شده استفاده کنید</p><div class="url-box" id="dohUrl" onclick="copyUrl()">' +
+      '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DoH Proxy - YNS</title><style>:root{--primary:#0ea5e9;--bg:#f8fafc;--card:#fff;--text:#1e293b;--border:#e2e8f0}body{font-family:Vazirmatn,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh}.card{background:var(--card);border-radius:16px;padding:32px;max-width:560px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08);border:1px solid var(--border);text-align:center}.badge{display:inline-block;background:linear-gradient(135deg,#0ea5e9,#667eea);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700;font-size:14px;margin-bottom:16px}h2{margin:0 0 8px;font-size:22px;font-weight:800;background:linear-gradient(135deg,#0ea5e9,#667eea);-webkit-background-clip:text;-webkit-text-fill-color:transparent}p{color:#64748b;font-size:14px;line-height:1.7;margin:8px 0}.url-box{background:#f0f9ff;border:2px solid #0ea5e9;border-radius:12px;padding:14px 18px;margin:16px 0;direction:ltr;text-align:left;font-family:monospace;font-size:15px;font-weight:700;color:#0369a1;word-break:break-all;cursor:pointer;transition:all .2s}.url-box:hover{background:#e0f2fe}.btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0ea5e9,#667eea);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;margin-top:8px;text-decoration:none}.btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(14,165,233,.3)}.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;text-align:right}.feature{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:500;color:#475569;display:flex;align-items:center;gap:6px}.feature i{color:#10b981}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none}.toast.show{opacity:1}</style></head><body><div class="card"><div class="badge">&#128736; DoH Proxy</div><h2>DNS over HTTPS</h2><p>از این سرور به عنوان DNS رمزگذاری شده استفاده کنید</p><div class="url-box" id="dohUrl" onclick="copyUrl()">' +
       j +
       '</div><button class="btn" onclick="copyUrl()">&#128203; کپی کردن آدرس DoH</button><div class="features"><div class="feature"><span>&#9989;</span> بدون Log</div><div class="feature"><span>&#9989;</span> پرسرعت</div><div class="feature"><span>&#9989;</span> امن</div><div class="feature"><span>&#9989;</span> رایگان</div></div></div><div class="toast" id="toast">کپی شد!</div><script>function copyUrl(){var t=document.getElementById("dohUrl");navigator.clipboard.writeText(t.innerText).then(function(){var e=document.getElementById("toast");e.classList.add("show"),setTimeout(function(){e.classList.remove("show")},2e3)})}</script></body></html>';
     return new Response(k, {
@@ -8302,7 +8312,7 @@ function wrapKVWithD1(c) {
             .run();
         }
       } catch (j) {}
-      if (f && (c.NOVA_KV_MIRROR === "1" || c.NOVA_KV_MIRROR === "true")) {
+      if (f && (c.NOVA_KV_MIRROR === "1" || c.NOVA_KV_MIRROR === "true" || c.YNS_KV_MIRROR === "1" || c.YNS_KV_MIRROR === "true")) {
         try {
           f.put(g, h, i).catch(() => {});
         } catch (l) {}
@@ -8314,7 +8324,7 @@ function wrapKVWithD1(c) {
           await c.DB.prepare("DELETE FROM kvstore WHERE k=?").bind(g).run();
         }
       } catch (h) {}
-      if (f && (c.NOVA_KV_MIRROR === "1" || c.NOVA_KV_MIRROR === "true")) {
+      if (f && (c.NOVA_KV_MIRROR === "1" || c.NOVA_KV_MIRROR === "true" || c.YNS_KV_MIRROR === "1" || c.YNS_KV_MIRROR === "true")) {
         try {
           f.delete(g).catch(() => {});
         } catch (i) {}
@@ -13350,7 +13360,7 @@ async function checkDomainHealth(c, f, g) {
       try {
         const q = {
           headers: {
-            "User-Agent": "NovaHealth/1.0",
+            "User-Agent": "YNSHealth/1.0",
           },
         };
         if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) {
@@ -13452,7 +13462,7 @@ async function announceSubLinks(c, f = {}) {
         ? "https://" +
           (JSON.parse((await getConfigRaw(c)) || "{}").HOST || "unknown")
         : null);
-    const k = ["<b>🔥 لینک‌های اشتراک Nova / Nova subscription links</b>", ""];
+    const k = ["<b>🔥 لینک‌های اشتراک YNS / YNS subscription links</b>", ""];
     if (j) {
       k.push(
         "<b>⚡️ لینک مستقیم (بهینه per-ISP) / Live (per-ISP optimized)</b>",
@@ -14214,7 +14224,7 @@ async function readConfigJson(c, f, g, h = "Mozilla/5.0", i = false) {
         specifiedPorts: -1,
       },
       SUB: null,
-      SUBNAME: "Nova Proxy",
+      SUBNAME: "YNS",
       SUBUpdateTime: 3,
       TOKEN: await MD5MD5(f + g),
     },
@@ -14370,7 +14380,7 @@ async function readConfigJson(c, f, g, h = "Mozilla/5.0", i = false) {
             specifiedPorts: config_JSON.优选订阅生成.本地IP库?.指定端口 || -1,
           },
           SUB: config_JSON.优选订阅生成.SUB || null,
-          SUBNAME: config_JSON.优选订阅生成.SUBNAME || "Nova Proxy",
+          SUBNAME: config_JSON.优选订阅生成.SUBNAME || "YNS",
           SUBUpdateTime: config_JSON.优选订阅生成.SUBUpdateTime || 3,
           TOKEN: config_JSON.优选订阅生成.TOKEN || (await MD5MD5(f + g)),
         };
@@ -14790,7 +14800,7 @@ async function fetchPoolFile(f) {
   try {
     const i = await fetch(f, {
       headers: {
-        "User-Agent": "NovaProxy",
+        "User-Agent": "YNSProxy",
       },
       cf: {
         cacheTtl: 1800,
@@ -14823,7 +14833,7 @@ async function getSmartCleanIPs(c, g, h) {
         .sort(() => 0.5 - Math.random())
         .slice(0, h || 16);
       return m.map((n) =>
-        n.includes("#") ? n : n + "#Nova-" + k.toUpperCase(),
+        n.includes("#") ? n : n + "#YNS | " + k.toUpperCase(),
       );
     }
   }
@@ -15090,8 +15100,8 @@ async function generateRandomIp(c, f = 16, g = -1) {
       const w = p(o[Math.floor(Math.random() * o.length)]);
       const x = g === -1 ? n[Math.floor(Math.random() * n.length)] : g;
       const y =
-        q +
-        "Nova-" +
+        "YNS | " +
+        (q ? q : "") +
         Array.from(
           crypto.getRandomValues(new Uint8Array(6)),
           (z) => "abcdefghijklmnopqrstuvwxyz0123456789"[z % 36],
@@ -15134,7 +15144,7 @@ async function getBestSubGeneratorData(c) {
   try {
     const l = await fetch(i, {
       headers: {
-        "User-Agent": "NovaProxy (https://github.com/NovaProxy)",
+        "User-Agent": "YNSProxy",
       },
     });
     if (!l.ok) {
@@ -16388,7 +16398,7 @@ async function runCfInstall(c, f, g, h, i) {
     Math.random().toString(36).slice(2, 10) +
     Math.random().toString(36).slice(2, 6)
   ).toUpperCase();
-  const q = j.scriptName || "nova-panel";
+  const q = j.scriptName || "yns-panel";
   const s = await cfDeploy(
     {
       token: j.token,
@@ -16545,7 +16555,7 @@ function tgSt(c) {
 }
 function tgMainMenu(c) {
   return {
-    text: "<b>🛰 Nova Proxy — کنترل پنل</b>\n\n<blockquote>پنل را از همین‌جا مدیریت کنید: تنظیمات، شبکه/DNS، دامنه‌ها، اشتراک و اعلان‌ها.</blockquote>",
+    text: "<b>🛰 YNS — کنترل پنل</b>\n\n<blockquote>پنل را از همین‌جا مدیریت کنید: تنظیمات، شبکه/DNS، دامنه‌ها، اشتراک و اعلان‌ها.</blockquote>",
     keyboard: {
       inline_keyboard: [
         [
@@ -17136,7 +17146,7 @@ async function tgHandleMenu(f, g, i, j, k, l, m) {
       text:
         "✏️ " +
         (a8[a7] || "مقدار را بفرستید:") +
-        "\n<code>[NOVA:" +
+        "\n<code>[YNS:" +
         a7 +
         "]</code>",
       reply_markup: {
@@ -17146,7 +17156,7 @@ async function tgHandleMenu(f, g, i, j, k, l, m) {
   }
   if (f === "m:install") {
     const a9 =
-      "<b>🚀 نصب Nova روی Cloudflare شما</b>\n\n<blockquote>این ابزار یک نسخهٔ کامل از Nova را روی حساب Cloudflare <b>خودتان</b> مستقر می‌کند: ساخت دیتابیس D1، آپلود ورکر، تنظیم UUID و رمز، و فعال‌سازی آدرس workers.dev.\n\n🔒 توکن شما فقط در همین لحظه برای استقرار استفاده می‌شود و <b>هیچ‌جا ذخیره نمی‌شود</b>.\n\nیک <b>API Token</b> با این دسترسی‌ها بسازید (My Profile → API Tokens → Create Token → Custom):\n• Account · Workers Scripts · <b>Edit</b>\n• Account · D1 · <b>Edit</b>\n• Account · Workers Subdomain · <b>Edit</b> (اگر بود)</blockquote>";
+      "<b>🚀 نصب YNS روی Cloudflare شما</b>\n\n<blockquote>این ابزار یک نسخهٔ کامل از YNS را روی حساب Cloudflare <b>خودتان</b> مستقر می‌کند: ساخت دیتابیس D1، آپلود ورکر، تنظیم UUID و رمز، و فعال‌سازی آدرس workers.dev.\n\n🔒 توکن شما فقط در همین لحظه برای استقرار استفاده می‌شود و <b>هیچ‌جا ذخیره نمی‌شود</b>.\n\nیک <b>API Token</b> با این دسترسی‌ها بسازید (My Profile → API Tokens → Create Token → Custom):\n• Account · Workers Scripts · <b>Edit</b>\n• Account · D1 · <b>Edit</b>\n• Account · Workers Subdomain · <b>Edit</b> (اگر بود)</blockquote>";
     return tgApi(p, "editMessageText", {
       chat_id: r,
       message_id: s,
@@ -17179,7 +17189,7 @@ async function tgHandleMenu(f, g, i, j, k, l, m) {
     return tgApi(p, "sendMessage", {
       chat_id: r,
       parse_mode: "HTML",
-      text: "🔑 توکن Cloudflare API را در پاسخ به همین پیام بفرستید:\n<code>[NOVA:cf_token]</code>\n\n<i>پس از استقرار، توکن از حافظه پاک می‌شود. توصیه: بعد از نصب، توکن را در داشبورد Cloudflare باطل کنید.</i>",
+      text: "🔑 توکن Cloudflare API را در پاسخ به همین پیام بفرستید:\n<code>[YNS:cf_token]</code>\n\n<i>پس از استقرار، توکن از حافظه پاک می‌شود. توصیه: بعد از نصب، توکن را در داشبورد Cloudflare باطل کنید.</i>",
       reply_markup: {
         force_reply: true,
       },
@@ -17294,7 +17304,7 @@ async function handleTelegramWebhook(c, f, g, i) {
         await sendBotMessage(
           k.BotToken,
           m,
-          "<b>Nova Proxy</b>\n\nChat ID: <code>" +
+          "<b>YNS</b>\n\nChat ID: <code>" +
             m +
             "</code>\n\n🔒 این ربات فقط به مدیر پاسخ می‌دهد. اگر مدیر هستید، این Chat ID را در پنل ← اعلان‌ها وارد و ذخیره کنید.\nThis bot only answers its admin. If that is you, set this Chat ID in Panel → Notifications.",
         );
@@ -17310,7 +17320,7 @@ async function handleTelegramWebhook(c, f, g, i) {
     const r = q ? JSON.parse(q) : {};
     const s = l.message.reply_to_message;
     if (s && s.text) {
-      const C = s.text.match(/\[NOVA:(\w+)\]/);
+      const C = s.text.match(/\[YNS:(\w+)\]/);
       if (C) {
         const D = C[1];
         const E = n;
@@ -17379,7 +17389,7 @@ async function handleTelegramWebhook(c, f, g, i) {
         const J = c.url.split("://")[0];
         const K = J + "://" + i + "/admin";
         const L =
-          "<b>🛰 به ربات Nova Proxy خوش آمدید</b>\n\n<blockquote>این ربات برای <b>مدیریت کامل پنل</b> از داخل تلگرام است:\nدریافت لینک اشتراک، مشاهده‌ی وضعیت و مصرف، و تغییر تنظیمات (پروتکل، شبکه/DNS، دامنه‌ها، اعلان‌ها) — هر تغییر مستقیم روی پنل اعمال می‌شود.\n\nاز دکمه‌های زیر استفاده کنید 👇</blockquote>";
+          "<b>🛰 به ربات YNS خوش آمدید</b>\n\n<blockquote>این ربات برای <b>مدیریت کامل پنل</b> از داخل تلگرام است:\nدریافت لینک اشتراک، مشاهده‌ی وضعیت و مصرف، و تغییر تنظیمات (پروتکل، شبکه/DNS، دامنه‌ها، اعلان‌ها) — هر تغییر مستقیم روی پنل اعمال می‌شود.\n\nاز دکمه‌های زیر استفاده کنید 👇</blockquote>";
         const M = {
           inline_keyboard: [
             [
@@ -17428,14 +17438,14 @@ async function handleTelegramWebhook(c, f, g, i) {
               },
               {
                 text: "🌍 وب‌سایت",
-                url: "https://novaproxy.online",
+                url: "https://t.me/YNS_Proxy",
                 style: "primary",
               },
             ],
             [
               {
-                text: "👥 گروه نوا",
-                url: "https://t.me/irnova_proxy",
+                text: "👥 گروه YNS",
+                url: "https://t.me/YNS_Proxy",
                 style: "primary",
               },
             ],
@@ -17461,7 +17471,7 @@ async function handleTelegramWebhook(c, f, g, i) {
       }
       case "/install": {
         const P =
-          "<b>🚀 نصب Nova روی Cloudflare شما</b>\n\n<blockquote>یک نسخهٔ کامل Nova را روی حساب Cloudflare خودتان مستقر می‌کند (D1 + ورکر + رمز + workers.dev).\n🔒 توکن فقط همین لحظه استفاده و هیچ‌جا ذخیره نمی‌شود.\n\nیک API Token بسازید با دسترسی: Workers Scripts·Edit، D1·Edit، Workers Subdomain·Edit.</blockquote>";
+          "<b>🚀 نصب YNS روی Cloudflare شما</b>\n\n<blockquote>یک نسخهٔ کامل YNS را روی حساب Cloudflare خودتان مستقر می‌کند (D1 + ورکر + رمز + workers.dev).\n🔒 توکن فقط همین لحظه استفاده و هیچ‌جا ذخیره نمی‌شود.\n\nیک API Token بسازید با دسترسی: Workers Scripts·Edit، D1·Edit، Workers Subdomain·Edit.</blockquote>";
         await tgApi(k.BotToken, "sendMessage", {
           chat_id: m,
           parse_mode: "HTML",
@@ -18011,7 +18021,7 @@ async function panelHtml(c, f, g = {}) {
   });
 }
 function panelUnavailableHtml() {
-  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nova Proxy — setup</title><style>body{font-family:system-ui,Segoe UI,Tahoma,sans-serif;background:#0b0d11;color:#e9edf4;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}.c{max-width:560px;background:#101319;border:1px solid #1c2027;border-radius:16px;padding:28px}h1{font-size:18px;margin:0 0 12px}p{color:#aeb6c4;line-height:1.7;font-size:14px}code{background:#0b0d11;border:1px solid #1c2027;border-radius:5px;padding:1px 6px;color:#22d3ee}</style></head><body><div class="c"><h1>Dashboard not bundled yet</h1><p>The Worker is running, but it can\'t find the dashboard files. This happens when the code was uploaded by hand instead of deployed from the repository.</p><p><b>Fix:</b> deploy with the <b>Deploy to Cloudflare</b> button (or connect the GitHub repo in <code>Workers &amp; Pages → your Worker → Settings → Build</code>). That bundles the dashboard (the <code>ASSETS</code> binding) and creates the <code>KV</code> namespace automatically.</p><p>Already have a separate dashboard site? Set a Worker variable <code>PAGES_URL</code> to its URL.</p></div></body></html>';
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YNS — setup</title><style>body{font-family:system-ui,Segoe UI,Tahoma,sans-serif;background:#0b0d11;color:#e9edf4;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}.c{max-width:560px;background:#101319;border:1px solid #1c2027;border-radius:16px;padding:28px}h1{font-size:18px;margin:0 0 12px}p{color:#aeb6c4;line-height:1.7;font-size:14px}code{background:#0b0d11;border:1px solid #1c2027;border-radius:5px;padding:1px 6px;color:#22d3ee}</style></head><body><div class="c"><h1>Dashboard not bundled yet</h1><p>The Worker is running, but it can\'t find the dashboard files. This happens when the code was uploaded by hand instead of deployed from the repository.</p><p><b>Fix:</b> deploy with the <b>Deploy to Cloudflare</b> button (or connect the GitHub repo in <code>Workers &amp; Pages → your Worker → Settings → Build</code>). That bundles the dashboard (the <code>ASSETS</code> binding) and creates the <code>KV</code> namespace automatically.</p><p>Already have a separate dashboard site? Set a Worker variable <code>PAGES_URL</code> to its URL.</p></div></body></html>';
 }
 async function handleInstall(c, f, g, h, i, j) {
   const k = g.pathname
@@ -18203,7 +18213,7 @@ async function centralHeartbeat(c) {
     return;
   }
   const h = g.HOST || (Array.isArray(g.HOSTS) && g.HOSTS[0]) || "";
-  const i = await MD5MD5("nova-instance:" + h);
+  const i = await MD5MD5("yns-instance:" + h);
   let j = null;
   try {
     j = await usageGet(
@@ -18219,7 +18229,7 @@ async function centralHeartbeat(c) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "NovaProxy",
+        "User-Agent": "YNSProxy",
       },
       body: JSON.stringify({
         id: i,
@@ -18239,7 +18249,7 @@ async function refreshAnnouncements(c) {
   try {
     const g = await fetch(f + "/announcement", {
       headers: {
-        "User-Agent": "NovaProxy",
+        "User-Agent": "YNSProxy",
       },
     });
     if (g.ok) {
@@ -18389,7 +18399,7 @@ function buildWarpWireGuardLink(c, f, g) {
   const h = encodeURIComponent(f.pk);
   const i = encodeURIComponent(warpPublicKey);
   const j = encodeURIComponent("172.16.0.2/32," + f.ipv6);
-  const k = encodeURIComponent("Nova-WARP-" + c);
+  const k = encodeURIComponent("YNS-WARP-" + c);
   const l =
     f.reserved && f.reserved.trim()
       ? "&reserved=" + encodeURIComponent(f.reserved)
@@ -18438,7 +18448,7 @@ function buildWarpNekoRayLink(c, f, g) {
     core: "internal",
     cs: k,
     mapping_port: 0,
-    name: "Nova-WARP-" + c,
+    name: "YNS-WARP-" + c,
     port: 1080,
     socks_port: 0,
   };
@@ -18678,7 +18688,7 @@ function warpPublicView(c, f) {
       k +
       "&address=" +
       encodeURIComponent(j) +
-      "&mtu=1280#Nova-WARP";
+      "&mtu=1280#YNS-WARP";
     g.conf =
       "[Interface]\nPrivateKey = " +
       c.privateKey +
@@ -18727,7 +18737,7 @@ async function buildRegisteredWarpNode(c) {
     l +
     "&address=" +
     k +
-    "&mtu=1280#Nova-WARP"
+    "&mtu=1280#YNS-WARP"
   );
 }
 function timingSafeStrEqual(c, f) {
@@ -18921,7 +18931,7 @@ async function githubPutFile(c, f, g, h) {
   const l = {
     Authorization: "Bearer " + c.token,
     Accept: "application/vnd.github+json",
-    "User-Agent": "nova-proxy-worker",
+    "User-Agent": "yns-proxy-worker",
     "X-GitHub-Api-Version": "2022-11-28",
   };
   const m = utf8ToBase64(g);
@@ -19035,7 +19045,7 @@ async function publishSubMirror(c, g) {
     try {
       const v = new Request(g + "/sub?token=" + k + "&" + u.q, {
         headers: {
-          "User-Agent": "NovaMirror/1.0",
+          "User-Agent": "YNSMirror/1.0",
         },
       });
       const w = await novaWorker.fetch(v, c, {
@@ -19075,7 +19085,7 @@ async function publishSubMirror(c, g) {
         h,
         y,
         x,
-        "Nova: update " + u.name + " (" + new Date().toISOString() + ")",
+        "YNS: update " + u.name + " (" + new Date().toISOString() + ")",
       );
       m.push({
         file: u.name,
