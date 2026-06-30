@@ -3387,12 +3387,6 @@ const novaWorker = {
                   pathFieldName: fl,
                   domainFieldName: fm,
                 } = getTransportProtocolConfig(config_JSON);
-                const fn = eHUsername
-                  ? "YNS | " + eHUsername
-                  : eH
-                    ? "YNS | " + eH
-                    : "YNS";
-                fc = [D + ":443#" + fn, ...fc];
                 const fo = String(config_JSON.chainProxy || "").trim();
                 let fp = fo
                   ? fo
@@ -18163,8 +18157,11 @@ async function panelHtml(c, f, g = {}) {
     "::-webkit-scrollbar-track{background:transparent}" +
     "::-webkit-scrollbar-thumb{background:rgba(245,196,44,.28);border-radius:2px}" +
     "::-webkit-scrollbar-thumb:hover{background:rgba(245,196,44,.50)}" +
-    // Selection
     "::selection{background:rgba(245,196,44,.22)}" +
+    // Hide entire free-service notice card and lockpill
+    ".lockpill{display:none!important}" +
+    ".notice-box{display:none!important}" +
+    "[data-i18n='notice_h']{display:none!important}" +
     "<\/style>";
   k = k.replace("<\/head>", ynsGoldCSS + ynsEarlyScript + "<\/head>");
   // 8) Late patch — runs after all panel JS
@@ -18183,7 +18180,8 @@ async function panelHtml(c, f, g = {}) {
     "<\/svg>";
   // Custom YNS Farsi sidebar labels (applied to both en & fa so no language
   // switch can expose the original Nova Proxy strings)
-  const ynsI18N = {
+  // Farsi (fa) — custom YNS labels for all sidebar titles + subtitles
+  const ynsI18N_fa = {
     nav_dashboard:    "\u0645\u0631\u06a9\u0632 \u06a9\u0646\u062a\u0631\u0644",
     nav_distribution: "\u0644\u06cc\u0646\u06a9\u200c\u0647\u0627\u06cc \u0627\u0634\u062a\u0631\u0627\u06a9",
     nav_network:      "\u0634\u0628\u06a9\u0647 \u0648 \u0622\u06cc\u200c\u067e\u06cc\u200c\u0647\u0627",
@@ -18195,47 +18193,99 @@ async function panelHtml(c, f, g = {}) {
     nav_settings:     "\u062a\u0646\u0638\u06cc\u0645\u0627\u062a \u0633\u0631\u0648\u06cc\u0633",
     nav_activity:     "\u0644\u0627\u06af \u0641\u0639\u0627\u0644\u06cc\u062a\u200c\u0647\u0627",
     nav_notifications:"\u0647\u0634\u062f\u0627\u0631\u0647\u0627",
-    nav_guide:        "\u0631\u0627\u0647\u0646\u0645\u0627",
+    nav_guide:        "\u0631\u0627\u0647\u0646\u0645\u0627\u06cc YNS",
     nav_about:        "\u062f\u0631\u0628\u0627\u0631\u0647 YNS",
     nav_collapse:     "\u0628\u0633\u062a\u0646 \u0645\u0646\u0648",
     grp_netset:       "\u0634\u0628\u06a9\u0647 \u0648 \u0645\u0633\u06cc\u0631\u06cc\u0627\u0628\u06cc",
     env_prod:         "YNS | \u0641\u0639\u0627\u0644",
-    sub_dashboard:    "\u0648\u0636\u0639\u06cc\u062a \u0644\u062d\u0638\u0647\u200c\u0627\u06cc \u0633\u0631\u0648\u06cc\u0633 YNS",
-    sub_distribution: "\u0644\u06cc\u0646\u06a9\u200c\u0647\u0627 \u0648 \u0631\u0627\u0647\u200c\u0627\u0646\u062f\u0627\u0632\u06cc \u06a9\u0644\u0627\u06cc\u0646\u062a",
-    sub_network:      "\u0645\u062f\u06cc\u0631\u06cc\u062a IP\u060c \u0645\u0633\u06cc\u0631\u06cc\u0627\u0628\u06cc \u0648 DNS",
-    sub_activity:     "\u062a\u0627\u0631\u06cc\u062e\u0686\u0647 \u06a9\u0627\u0645\u0644 \u0639\u0645\u0644\u06cc\u0627\u062a",
+    sub_dashboard:    "\u0648\u0636\u0639\u06cc\u062a \u0644\u062d\u0638\u0647\u200c\u0627\u06cc \u0633\u0631\u0648\u06cc\u0633 YNS \u0634\u0645\u0627",
+    sub_distribution: "\u0644\u06cc\u0646\u06a9\u200c\u0647\u0627\u06cc \u0627\u062e\u062a\u0635\u0627\u0635\u06cc \u0648 \u0631\u0627\u0647\u200c\u0627\u0646\u062f\u0627\u0632\u06cc \u06a9\u0644\u0627\u06cc\u0646\u062a",
+    sub_network:      "\u0645\u062f\u06cc\u0631\u06cc\u062a IP\u060c \u0645\u0633\u06cc\u0631\u06cc\u0627\u0628\u06cc \u0648 DNS \u0633\u0641\u0627\u0631\u0634\u06cc",
+    sub_activity:     "\u062a\u0627\u0631\u06cc\u062e\u0686\u0647 \u06a9\u0627\u0645\u0644 \u0639\u0645\u0644\u06cc\u0627\u062a \u0633\u0631\u0648\u06cc\u0633",
     sub_settings:     "\u067e\u06cc\u06a9\u0631\u0628\u0646\u062f\u06cc \u067e\u0631\u0648\u062a\u06a9\u0644\u060c \u0627\u0645\u0646\u06cc\u062a \u0648 \u062f\u0633\u062a\u0631\u0633\u06cc",
     sub_notifications:"\u0633\u0642\u0641 \u0645\u0635\u0631\u0641 \u0648 \u06a9\u0627\u0646\u0627\u0644\u200c\u0647\u0627\u06cc \u0647\u0634\u062f\u0627\u0631",
-    sub_users:        "\u0644\u06cc\u0646\u06a9\u060c \u0633\u0647\u0645\u06cc\u0647 \u0648 \u062a\u0627\u0631\u06cc\u062e \u0627\u0646\u0642\u0636\u0627\u06cc \u0647\u0631 \u06a9\u0627\u0631\u0628\u0631",
+    sub_users:        "\u0644\u06cc\u0646\u06a9 \u0627\u062e\u062a\u0635\u0627\u0635\u06cc\u060c \u0633\u0647\u0645\u06cc\u0647 \u0648 \u062a\u0627\u0631\u06cc\u062e \u0627\u0646\u0642\u0636\u0627\u06cc \u0647\u0631 \u06a9\u0627\u0631\u0628\u0631",
     sub_wireguard:    "\u0633\u0627\u062e\u062a \u06a9\u0627\u0646\u0641\u06cc\u06af WARP \u06cc\u0627 WireGuard \u0633\u0641\u0627\u0631\u0634\u06cc",
     sub_about:        "\u062f\u0631\u0628\u0627\u0631\u0647 \u0633\u0631\u0648\u06cc\u0633 YNS",
-    sub_proxy:        "\u062a\u0646\u0638\u06cc\u0645\u0627\u062a PROXYIP \u0648 \u0633\u0631\u0648\u0631 \u0648\u0627\u0633\u0637",
+    sub_proxy:        "\u062a\u0646\u0638\u06cc\u0645\u0627\u062a PROXYIP \u0648 \u0633\u0631\u0648\u0631 \u0648\u0627\u0633\u0637 \u0633\u0641\u0627\u0631\u0634\u06cc",
     sub_corenode:     "\u0646\u0648\u062f \u0627\u0635\u0644\u06cc \u0631\u0648\u06cc \u062f\u0627\u0645\u0646\u0647 \u062e\u0648\u062f\u062a\u0627\u0646",
+    sub_cleanips:     "\u0645\u062f\u06cc\u0631\u06cc\u062a \u0622\u062f\u0631\u0633\u200c\u0647\u0627\u06cc \u0628\u0647\u06cc\u0646\u0647\u200c\u0633\u0627\u0632\u06cc\u200c\u0634\u062f\u0647",
     ab_panel:         "\u067e\u0646\u0644 YNS",
     ab_worker:        "\u0648\u0631\u06a9\u0631 YNS",
-    ab_desc:          "\u067e\u0646\u0644 \u0645\u062f\u06cc\u0631\u06cc\u062a YNS \u2014 \u06a9\u0646\u062a\u0631\u0644 \u06a9\u0627\u0645\u0644 \u0633\u0631\u0648\u06cc\u0633 \u067e\u0631\u0648\u06a9\u0633\u06cc \u0634\u0645\u0627 \u0631\u0648\u06cc Cloudflare",
+    ab_desc:          "\u067e\u0646\u0644 \u0645\u062f\u06cc\u0631\u06cc\u062a YNS \u2014 \u06a9\u0646\u062a\u0631\u0644 \u06a9\u0627\u0645\u0644 \u0633\u0631\u0648\u06cc\u0633 \u067e\u0631\u0648\u06a9\u0633\u06cc \u0627\u062e\u062a\u0635\u0627\u0635\u06cc \u0634\u0645\u0627 \u0631\u0648\u06cc Cloudflare",
     ab_changelog:     "\u062a\u063a\u06cc\u06cc\u0631\u0627\u062a",
     ab_links:         "\u067e\u06cc\u0648\u0646\u062f\u0647\u0627",
     logout:           "\u062e\u0631\u0648\u062c",
     ver_panel:        "\u067e\u0646\u0644",
     ver_worker:       "\u0648\u0631\u06a9\u0631",
+    notice_h:         "",
+    notice_s:         "",
+    notice_node:      "",
+    notice_locked:    "",
   };
-  const ynsI18NJson = JSON.stringify(ynsI18N);
+  // English (en) — custom YNS branded labels
+  const ynsI18N_en = {
+    nav_dashboard:    "Command Center",
+    nav_distribution: "Subscription Links",
+    nav_network:      "Network & IPs",
+    nav_cleanips:     "Clean IPs",
+    nav_wireguard:    "WireGuard / WARP",
+    nav_proxy:        "Proxy / CDN",
+    nav_corenode:     "Core Node",
+    nav_users:        "User Management",
+    nav_settings:     "Service Settings",
+    nav_activity:     "Activity Log",
+    nav_notifications:"Alerts",
+    nav_guide:        "YNS Guide",
+    nav_about:        "About YNS",
+    nav_collapse:     "Collapse menu",
+    grp_netset:       "Network & Routing",
+    env_prod:         "YNS | Live",
+    sub_dashboard:    "Live status of your YNS service.",
+    sub_distribution: "Private subscription links and client setup.",
+    sub_network:      "IP pool, custom routing and DNS config.",
+    sub_activity:     "Full operation history and audit trail.",
+    sub_settings:     "Protocol, security and access configuration.",
+    sub_notifications:"Usage limits and alert channels.",
+    sub_users:        "Private link, quota and expiry per user.",
+    sub_wireguard:    "Build a custom WARP / WireGuard config.",
+    sub_about:        "About YNS service.",
+    sub_proxy:        "PROXYIP and intermediary server config.",
+    sub_corenode:     "Core node on your own domain.",
+    sub_cleanips:     "Manage optimized clean IP addresses.",
+    ab_panel:         "YNS Panel",
+    ab_worker:        "YNS Worker",
+    ab_desc:          "YNS Management Panel \u2014 full private control of your Cloudflare proxy service.",
+    ab_changelog:     "Changelog",
+    ab_links:         "Links",
+    logout:           "Logout",
+    ver_panel:        "Panel",
+    ver_worker:       "Worker",
+    notice_h:         "",
+    notice_s:         "",
+    notice_node:      "",
+    notice_locked:    "",
+  };
+  const ynsI18NJson_fa = JSON.stringify(ynsI18N_fa);
+  const ynsI18NJson_en = JSON.stringify(ynsI18N_en);
   const ynsLateScript =
     "<script>(function(){" +
-    "var YO=" + ynsI18NJson + ";" +
+    "var YO_fa=" + ynsI18NJson_fa + ";" +
+    "var YO_en=" + ynsI18NJson_en + ";" +
     "var YFT='\u06cc\u0648\u0646\u0633 \u2014 \u0633\u0631\u0648\u06cc\u0633 \u067e\u0631\u0648\u06a9\u0633\u06cc \u0627\u062e\u062a\u0635\u0627\u0635\u06cc';" +
     "function ynsPatch(){" +
-    // Patch main panel I18N (both en + fa)
-    "if(window.I18N){['en','fa'].forEach(function(l){" +
+    // Patch main panel I18N — apply YNS labels per language
+    "if(window.I18N){" +
+    "var maps={fa:YO_fa,en:YO_en};" +
+    "['en','fa'].forEach(function(l){" +
     "if(!window.I18N[l])return;" +
     "Object.keys(window.I18N[l]).forEach(function(k){" +
     "if(typeof window.I18N[l][k]==='string')" +
     "window.I18N[l][k]=window.I18N[l][k].replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
     "});" +
-    "Object.keys(YO).forEach(function(k){window.I18N[l][k]=YO[k];});" +
+    "if(maps[l])Object.keys(maps[l]).forEach(function(k){window.I18N[l][k]=maps[l][k];});" +
     "});}" +
-    // Patch login page L object (en + fa)
+    // Patch login page L object
     "if(window.L){['en','fa'].forEach(function(l){" +
     "if(!window.L[l])return;" +
     "Object.keys(window.L[l]).forEach(function(k){" +
@@ -18244,14 +18294,13 @@ async function panelHtml(c, f, g = {}) {
     "});" +
     "window.L[l].ft=YFT;" +
     "});}" +
-    // Force Farsi + RTL (main panel)
+    // Force Farsi (main panel + login page)
     "if(typeof applyLang==='function')applyLang('fa');" +
-    // Force Farsi on login page
     "if(typeof applyL==='function')applyL('fa');" +
-    // Update login footer text directly
+    // Login footer
     "var ftEl=document.getElementById('ft');" +
     "if(ftEl&&ftEl.textContent.indexOf('Nova')>=0)ftEl.textContent=YFT;" +
-    // Walk DOM: replace any remaining "Nova Proxy" text nodes
+    // Walk DOM: replace remaining Nova Proxy text nodes
     "(function walk(n){" +
     "if(n.nodeType===3)n.textContent=n.textContent.replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
     "else if(n.childNodes)Array.from(n.childNodes).forEach(walk);" +
@@ -18263,10 +18312,15 @@ async function panelHtml(c, f, g = {}) {
     "var s=d.firstChild;" +
     "if(s&&img.parentNode)img.parentNode.replaceChild(s,img);" +
     "});" +
+    // Hide free-service notice card entirely (find parent card of notice_h)
+    "document.querySelectorAll('[data-i18n=\"notice_h\"],[data-i18n=\"notice_s\"],[data-i18n=\"notice_node\"],[data-i18n=\"notice_locked\"]')" +
+    ".forEach(function(el){" +
+    "var c=el.closest('.card');if(c){c.style.display='none';c.style.visibility='hidden';}" +
+    "});" +
     // Hide about/changelog cards
     "document.querySelectorAll('[data-i18n=\"ab_changelog\"],[data-i18n=\"ab_links\"]')" +
     ".forEach(function(el){var c=el.closest('.card');if(c)c.style.display='none';});" +
-    // Force dark theme (override theme toggle)
+    // Force dark theme
     "document.documentElement.setAttribute('data-theme','dark');" +
     "}" +
     "if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ynsPatch);" +
