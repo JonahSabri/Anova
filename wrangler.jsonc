@@ -5,7 +5,7 @@
   //  the Worker — no terminal. The Worker creates its own D1 tables on first run.
   //  After deploy, open the Worker URL → the /install wizard sets the admin password.
   // ───────────────────────────────────────────────────────────────────────────
-  "name": "yns-proxy",
+  "name": "nova-proxy",
   "main": "worker.js",
   "compatibility_date": "2024-09-23",
   "compatibility_flags": ["nodejs_compat"],
