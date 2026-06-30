@@ -18029,7 +18029,30 @@ async function panelHtml(c, f, g = {}) {
   k = k.replace(/alt=["']Nova Proxy["']/g, 'alt="YNS"');
   // 5) Nova Proxy GitHub repo link → YNS repo
   k = k.replace(/IRNova\/Nova-Proxy/g, "JonahSabri/Anova");
-  // 6) Early localStorage override + favicon — runs before the panel's init script
+  // 6) Replace entire social links block with only Instagram
+  k = k.replace(
+    /<div class="social">[\s\S]*?<\/div>/,
+    '<div class="social">' +
+      '<a href="https://instagram.com/TrueYns" target="_blank" rel="noopener" ' +
+      'title="\u0627\u06cc\u0646\u0633\u062a\u0627\u06af\u0631\u0627\u0645 YNS" aria-label="Instagram">' +
+      '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">' +
+      '<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919' +
+      ".058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 " +
+      "4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26" +
+      "-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583." +
+      "07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0" +
+      "-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-." +
+      "073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 " +
+      "1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.6" +
+      "18 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-" +
+      "4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-" +
+      "6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.40" +
+      "3-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4" +
+      " 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 " +
+      '1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>' +
+      "<\/svg><\/a><\/div>",
+  );
+  // 7) Early localStorage override + favicon — runs before the panel's init script
   const ynsFaviconSvg =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2322d3ee'/%3E%3Ctext x='50%25' y='72%25' text-anchor='middle' font-size='13' font-weight='900' fill='white' font-family='system-ui'%3EYNS%3C/text%3E%3C/svg%3E";
   const ynsEarlyScript =
@@ -18039,15 +18062,18 @@ async function panelHtml(c, f, g = {}) {
     "if(k==='nova-lang'&&!_g.call(this,k))return 'fa';" +
     "return _g.call(this,k);" +
     "};" +
-    // Override favicon immediately
     "document.addEventListener('DOMContentLoaded',function(){" +
     "var fi=document.querySelector('link[rel*=\"icon\"]');" +
     "if(fi)fi.href='" + ynsFaviconSvg + "';" +
     "});" +
     "})();<\/script>";
   k = k.replace("<\/head>", ynsEarlyScript + "<\/head>");
-  // 7) Late patch — runs after all panel JS: re-applies Farsi, replaces remaining
-  //    "Nova Proxy" text nodes, swaps the logo SVG, patches I18N descriptions.
+  // 8) Late patch — runs after all panel JS
+  //    - overrides every I18N string (both fa & en) with YNS-specific Farsi labels
+  //    - re-applies Farsi/RTL
+  //    - replaces remaining "Nova Proxy" text nodes
+  //    - swaps the logo image with an inline YNS gradient SVG
+  //    - hides the "about/changelog/links" card (data-i18n="ab_desc")
   const ynsLogoSvg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='30' height='30'>" +
     "<defs><linearGradient id='yg' x1='0' y1='0' x2='40' y2='40' gradientUnits='userSpaceOnUse'>" +
@@ -18056,29 +18082,80 @@ async function panelHtml(c, f, g = {}) {
     "<rect width='40' height='40' rx='9' fill='url(%23yg)'/>" +
     "<text x='50%25' y='70%25' text-anchor='middle' font-size='14' font-weight='900' fill='white' font-family='system-ui,sans-serif'>YNS<\/text>" +
     "<\/svg>";
+  // Custom YNS Farsi sidebar labels (applied to both en & fa so no language
+  // switch can expose the original Nova Proxy strings)
+  const ynsI18N = {
+    nav_dashboard:    "\u0645\u0631\u06a9\u0632 \u06a9\u0646\u062a\u0631\u0644",
+    nav_distribution: "\u0644\u06cc\u0646\u06a9\u200c\u0647\u0627\u06cc \u0627\u0634\u062a\u0631\u0627\u06a9",
+    nav_network:      "\u0634\u0628\u06a9\u0647 \u0648 \u0622\u06cc\u200c\u067e\u06cc\u200c\u0647\u0627",
+    nav_cleanips:     "\u0622\u06cc\u200c\u067e\u06cc\u200c\u0647\u0627\u06cc \u067e\u0627\u06a9",
+    nav_wireguard:    "WireGuard / WARP",
+    nav_proxy:        "\u067e\u0631\u0648\u06a9\u0633\u06cc \u0648 CDN",
+    nav_corenode:     "\u0646\u0648\u062f \u067e\u0627\u06cc\u0647",
+    nav_users:        "\u0645\u062f\u06cc\u0631\u06cc\u062a \u06a9\u0627\u0631\u0628\u0631\u0627\u0646",
+    nav_settings:     "\u062a\u0646\u0638\u06cc\u0645\u0627\u062a \u0633\u0631\u0648\u06cc\u0633",
+    nav_activity:     "\u0644\u0627\u06af \u0641\u0639\u0627\u0644\u06cc\u062a\u200c\u0647\u0627",
+    nav_notifications:"\u0647\u0634\u062f\u0627\u0631\u0647\u0627",
+    nav_guide:        "\u0631\u0627\u0647\u0646\u0645\u0627",
+    nav_about:        "\u062f\u0631\u0628\u0627\u0631\u0647 YNS",
+    nav_collapse:     "\u0628\u0633\u062a\u0646 \u0645\u0646\u0648",
+    grp_netset:       "\u0634\u0628\u06a9\u0647 \u0648 \u0645\u0633\u06cc\u0631\u06cc\u0627\u0628\u06cc",
+    env_prod:         "YNS | \u0641\u0639\u0627\u0644",
+    sub_dashboard:    "\u0648\u0636\u0639\u06cc\u062a \u0644\u062d\u0638\u0647\u200c\u0627\u06cc \u0633\u0631\u0648\u06cc\u0633 YNS",
+    sub_distribution: "\u0644\u06cc\u0646\u06a9\u200c\u0647\u0627 \u0648 \u0631\u0627\u0647\u200c\u0627\u0646\u062f\u0627\u0632\u06cc \u06a9\u0644\u0627\u06cc\u0646\u062a",
+    sub_network:      "\u0645\u062f\u06cc\u0631\u06cc\u062a IP\u060c \u0645\u0633\u06cc\u0631\u06cc\u0627\u0628\u06cc \u0648 DNS",
+    sub_activity:     "\u062a\u0627\u0631\u06cc\u062e\u0686\u0647 \u06a9\u0627\u0645\u0644 \u0639\u0645\u0644\u06cc\u0627\u062a",
+    sub_settings:     "\u067e\u06cc\u06a9\u0631\u0628\u0646\u062f\u06cc \u067e\u0631\u0648\u062a\u06a9\u0644\u060c \u0627\u0645\u0646\u06cc\u062a \u0648 \u062f\u0633\u062a\u0631\u0633\u06cc",
+    sub_notifications:"\u0633\u0642\u0641 \u0645\u0635\u0631\u0641 \u0648 \u06a9\u0627\u0646\u0627\u0644\u200c\u0647\u0627\u06cc \u0647\u0634\u062f\u0627\u0631",
+    sub_users:        "\u0644\u06cc\u0646\u06a9\u060c \u0633\u0647\u0645\u06cc\u0647 \u0648 \u062a\u0627\u0631\u06cc\u062e \u0627\u0646\u0642\u0636\u0627\u06cc \u0647\u0631 \u06a9\u0627\u0631\u0628\u0631",
+    sub_wireguard:    "\u0633\u0627\u062e\u062a \u06a9\u0627\u0646\u0641\u06cc\u06af WARP \u06cc\u0627 WireGuard \u0633\u0641\u0627\u0631\u0634\u06cc",
+    sub_about:        "\u062f\u0631\u0628\u0627\u0631\u0647 \u0633\u0631\u0648\u06cc\u0633 YNS",
+    sub_proxy:        "\u062a\u0646\u0638\u06cc\u0645\u0627\u062a PROXYIP \u0648 \u0633\u0631\u0648\u0631 \u0648\u0627\u0633\u0637",
+    sub_corenode:     "\u0646\u0648\u062f \u0627\u0635\u0644\u06cc \u0631\u0648\u06cc \u062f\u0627\u0645\u0646\u0647 \u062e\u0648\u062f\u062a\u0627\u0646",
+    ab_panel:         "\u067e\u0646\u0644 YNS",
+    ab_worker:        "\u0648\u0631\u06a9\u0631 YNS",
+    ab_desc:          "\u067e\u0646\u0644 \u0645\u062f\u06cc\u0631\u06cc\u062a YNS \u2014 \u06a9\u0646\u062a\u0631\u0644 \u06a9\u0627\u0645\u0644 \u0633\u0631\u0648\u06cc\u0633 \u067e\u0631\u0648\u06a9\u0633\u06cc \u0634\u0645\u0627 \u0631\u0648\u06cc Cloudflare",
+    ab_changelog:     "\u062a\u063a\u06cc\u06cc\u0631\u0627\u062a",
+    ab_links:         "\u067e\u06cc\u0648\u0646\u062f\u0647\u0627",
+    logout:           "\u062e\u0631\u0648\u062c",
+    ver_panel:        "\u067e\u0646\u0644",
+    ver_worker:       "\u0648\u0631\u06a9\u0631",
+  };
+  const ynsI18NJson = JSON.stringify(ynsI18N);
   const ynsLateScript =
     "<script>(function(){" +
+    "var YO=" + ynsI18NJson + ";" +
     "function ynsPatch(){" +
-    // Patch every I18N string that says "Nova Proxy"
+    // Override specific i18n keys in BOTH en and fa
     "if(window.I18N){['en','fa'].forEach(function(l){" +
     "if(!window.I18N[l])return;" +
+    // Replace all Nova Proxy strings
     "Object.keys(window.I18N[l]).forEach(function(k){" +
     "if(typeof window.I18N[l][k]==='string')" +
     "window.I18N[l][k]=window.I18N[l][k].replace(/Nova Proxy/gi,'YNS').replace(/NovaProxy/gi,'YNS');" +
-    "});});}" +
-    // Force Farsi
+    "});" +
+    // Apply YNS custom labels
+    "Object.keys(YO).forEach(function(k){window.I18N[l][k]=YO[k];});" +
+    "});}" +
+    // Force Farsi + RTL
     "if(typeof applyLang==='function')applyLang('fa');" +
-    // Walk DOM and replace any leftover "Nova Proxy" text nodes
+    // Walk DOM and replace any remaining "Nova Proxy" text
     "(function walk(n){" +
     "if(n.nodeType===3)n.textContent=n.textContent.replace(/Nova Proxy/gi,'YNS');" +
     "else if(n.childNodes)Array.from(n.childNodes).forEach(walk);" +
     "})(document.body||document.documentElement);" +
-    // Replace logo img with inline SVG
+    // Replace logo img → YNS gradient SVG
     "document.querySelectorAll('img[alt=\"YNS\"]').forEach(function(img){" +
     "var d=document.createElement('div');" +
     "d.innerHTML=decodeURIComponent('" + ynsLogoSvg + "');" +
     "var s=d.firstChild;" +
     "if(s&&img.parentNode)img.parentNode.replaceChild(s,img);" +
+    "});" +
+    // Hide any card that still mentions Nova Proxy in its heading/description
+    "document.querySelectorAll('[data-i18n=\"ab_changelog\"],[data-i18n=\"ab_links\"]')" +
+    ".forEach(function(el){" +
+    "var card=el.closest('.card');" +
+    "if(card)card.style.display='none';" +
     "});" +
     "}" +
     "if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ynsPatch);" +
